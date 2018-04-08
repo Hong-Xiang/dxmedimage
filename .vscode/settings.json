@@ -1,0 +1,7 @@
+{
+  "python.formatting.autopep8Path": "yapf",
+  "python.formatting.yapfArgs": [
+    "--style",
+    "{indent_width=2}"
+  ],
+}
