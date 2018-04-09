@@ -23,27 +23,16 @@ class FBP(Algorithm):
           'hamming',
           'hann',
           'none',
-          'tukey',
-          'lanczos',
-          'triangular',
-          'gaussian',
-          'barlett-hann',
-          'blackman',
-          'nuttall',
-          'blackman-harris',
-          'blackman-nuttall',
-          # 'flat-top',
-          # 'kaiser',
-          # 'parzen',
-          # 'projection',
-          # 'sinogram',
-          # 'rprojection',
-          # 'rsinogram'
       ]
 
-  def __init__(self, device='gpu', backend='astra', filter_=None):
+  def __init__(self,
+               device='gpu',
+               backend='astra',
+               filter_='ram-lak',
+               filter_d=1.0):
     super().__init__(device, backend)
     self._filter = filter_
+    self.filter_d = filter_d
 
   @property
   def filter(self):

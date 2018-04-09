@@ -27,7 +27,8 @@ class ReconstructorParallel2D:
         'type': _get_algorithm_type(algorithm),
         'ProjectionDataId': self._sino_id,
         'ReconstructionDataId': self._image_id,
-        'FilterType': algorithm.filter
+        'FilterType': algorithm.filter,
+        'FilterD': algorithm.filter_d,
     }
     self._alg_id = aa.algorithm.create(alg_cfg)
     self._detector = detector
