@@ -1,7 +1,7 @@
 class Detector:
   def check_data_capability(self, data):
     """
-    Check if data shape, content, e.t.c.
+    Check if data is output of this detecotr, mainly checking shape, content, etc.
     Returns: 
       None
     Raises:
@@ -16,3 +16,7 @@ class Detector3D(Detector):
 
 class Detector2D(Detector):
   ndim = 2
+
+
+class Model:
+  name = None
