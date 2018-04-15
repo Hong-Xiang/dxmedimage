@@ -17,6 +17,7 @@ import enum
 #     raise InputVerifacationError("Input detector is not Detector2D, {}.")
 #   detector.assert_fit(sinogram)
 
+
 @contextmanager
 def reconstructor2d(detector: Parallel2D, image_spec: Image2DSpec,
                     method: Algorithm):
@@ -39,17 +40,33 @@ def reconstruction2d_single(sinogram: np.ndarray, detector: Parallel2D,
     return r.reconstruct(sinogram)
 
 
-def reconstruction2d_batch(sinograms: np.ndarray, detector: Parallel2D,
-                           image_spec: Image2DSpec, method: Algorithm):
+def reconstruction2d_batch(sinograms: np.ndarray,
+                           detector: Parallel2D,
+                           image_spec: Image2DSpec,
+                           method: Algorithm,
+                           *,
+                           tqdm=None):
   nb_images = sinograms.shape[0]
-  with reconstructor2d(detector, image, method) as r:
-    results = [r.reconstruct(sinograms[i, ...]) for i in range(nb_images)]
+  with reconstructor2d(detector, image_spec, method) as r:
+    if tqdm is None:
+
+      def tqdm(x, ascii=None, leave=None):
+        return x
+
+    results = [
+        r.reconstruct(sinograms[i, ...])
+        for i in tqdm(range(nb_images), ascii=True, leave=False)
+    ]
   return np.array(results)
 
 
 # @configurable(config.get('reconstruction'))
-def reconstruction2d(sinograms, detector: Parallel2D, image_spec: Image2DSpec,
-                     method):
+def reconstruction2d(sinograms,
+                     detector: Parallel2D,
+                     image_spec: Image2DSpec,
+                     method,
+                     *,
+                     tqdm=None):
   """
     Args:
       sinogram: one of the following objects:
@@ -61,9 +78,16 @@ def reconstruction2d(sinograms, detector: Parallel2D, image_spec: Image2DSpec,
         phantom_spec: phantom specifics
         sinogram: 2-dimensional ndarray.
     """
-  if sinograms.ndim == 3:
-    logging.debug('Sinogram dimension is 3, use batch mode.')
-    return reconstruction2d_batch(sinograms, detector, image_spec, method)
+  if sinograms.ndim in (3, 4):
+    logging.debug('Sinogram dimension is {}, use batch mode.'.format(
+        sinograms.ndim))
+    if sinograms.ndim == 4:
+      logging.debug(
+          'Last dimension of sinograms will be ignored by sinograms[:, :, :, 0].'.
+          format(sinograms.ndim))
+      sinograms = sinograms[:, :, :, 0]
+    return reconstruction2d_batch(
+        sinograms, detector, image_spec, method, tqdm=tqdm)
   else:
     logging.debug('Sinogram dimension is 3, use batch mode.')
     return reconstruction2d_single(sinograms, detector, image_spec, method)

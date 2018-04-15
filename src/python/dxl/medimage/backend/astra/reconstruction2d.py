@@ -23,14 +23,13 @@ class ReconstructorParallel2D:
                                                  proj_geom, vol_geom)
     self._sino_id = aa.data2d.create('-sino', proj_geom)
     self._image_id = aa.data2d.create('-vol', vol_geom)
-    alg_cfg = {
+    self._alg_cfg = {
         'type': _get_algorithm_type(algorithm),
         'ProjectionDataId': self._sino_id,
         'ReconstructionDataId': self._image_id,
         'FilterType': algorithm.filter,
         'FilterD': algorithm.filter_d,
     }
-    self._alg_id = aa.algorithm.create(alg_cfg)
     self._detector = detector
     self._image_spec = image
     self._algorithm = algorithm
@@ -38,7 +37,9 @@ class ReconstructorParallel2D:
   def reconstruct(self, sinogram, iterations=1):
     self._detector.check_data_capability(sinogram)
     aa.data2d.store(self._sino_id, sinogram)
-    aa.algorithm.run(self._alg_id, iterations)
+    alg_id = aa.algorithm.create(self._alg_cfg)
+    aa.algorithm.run(alg_id, iterations)
+    aa.algorithm.delete(alg_id)
     result = aa.data2d.get(self._image_id)
     return result
 
@@ -46,4 +47,3 @@ class ReconstructorParallel2D:
     aa.data2d.delete(self._sino_id)
     aa.data2d.delete(self._image_id)
     aa.projector.delete(self._proj_id)
-    aa.algorithm.delete(self._alg_id)
